@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".SelectOnMapFragment">
+
+    <WebView
+        android:id="@+id/web_map"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <Button
+        android:id="@+id/start_button"
+        android:layout_width="280dp"
+        android:layout_height="40dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:background="@drawable/start_button"
+        android:text="Start"
+        android:textColor="@color/whiteColor"
+        android:fontFamily="sans-serif"
+        android:textAllCaps="false"
+        android:layout_marginBottom="20dp"
+        tools:ignore="HardcodedText"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

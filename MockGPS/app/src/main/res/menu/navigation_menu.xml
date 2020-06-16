@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/select_on_map"
+        android:icon="@drawable/ic_location"
+        android:title="Select on map"
+        tools:ignore="HardcodedText" />
+    <item
+        android:id="@+id/custom_location"
+        android:icon="@drawable/ic_click"
+        android:title="Custom location"
+        tools:ignore="HardcodedText" />
+</menu>
