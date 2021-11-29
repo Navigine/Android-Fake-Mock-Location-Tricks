@@ -7,3 +7,4 @@
 Demo application for changing your smartphones Network and GPS provider using Mock Location. Do not forget to choose this application as Mock Location application in Developer Settings.
 
 For running the APK on your device, just clone the repo and import to Android Studio. Minimal SDK version is 21.
+Or [download apk](https://github.com/Navigine/Android-Fake-Mock-Location-Tricks/blob/master/app-debug.apk)
