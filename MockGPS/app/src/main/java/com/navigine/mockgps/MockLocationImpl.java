@@ -1,6 +1,7 @@
 package com.navigine.mockgps;
 
 import android.content.Context;
+import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Build;
@@ -48,8 +49,8 @@ public class MockLocationImpl {
                 false,
                 true,
                 true,
-                0,
-                5);
+                Criteria.POWER_LOW,
+                Criteria.ACCURACY_LOW);
 
         Location newLocation = new Location(provider);
 
