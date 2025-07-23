@@ -17,7 +17,7 @@ To run the APK on your device:
 - [Navigine Official Website](https://navigine.com/) – Learn more about our technology, products, and services.
 - [User Manual](http://docs.navigine.com/) – Full product usage guidelines and SDK documentation.
 - [Get Started with Navigine](http://locations.navigine.com/login) – Create your account and begin building indoor navigation solutions.
-- [Discuss the project](https://community.navigine.com/t/direction-of-arrival-doa-estimation-algorithm/174) – Join the community thread for questions, feedback, and collaboration specific to this repository.
+- [Discuss the project](https://community.navigine.com/t/android-fake-mock-location-tricks/175) – Join the community thread for questions, feedback, and collaboration specific to this repository.
 - [Contact Navigine](https://navigine.com/contacts/) – Reach out for business or technical support.
 
 
