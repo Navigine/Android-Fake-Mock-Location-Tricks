@@ -4,14 +4,29 @@
 
 ## Mock GPS
 
-Demo application for changing your smartphone's Network and GPS provider using Mock Location.
+Demo application that replaces your smartphone's GPS and Network location with a point of your choice, using the standard Android Mock Location API.
+
+<p align="center">
+  <img src="screenshots/select-on-map.jpg" width="280" alt="Select a point on the map">
+  &nbsp;&nbsp;
+  <img src="screenshots/custom-location.jpg" width="280" alt="Enter coordinates manually">
+</p>
 
 Don't forget: choose this app as your Mock Location provider in Android Developer Settings.
+
+### Features
+
+- Pick a point on the map (long-press to place the marker)
+- Or enter latitude and longitude manually
+- Mocks both `GPS` and `NETWORK` providers once per second
+- Keeps running in the background with a foreground notification
+
+### Download
 
 To run the APK on your device:
 - Clone the repo and open it in Android Studio
 - Minimal SDK version required: 21
-- Or [download APK directly](https://github.com/Navigine/Android-Fake-Mock-Location-Tricks/blob/master/app-debug.apk)
+- Or get it from [Releases](https://github.com/Navigine/Android-Fake-Mock-Location-Tricks/releases/latest)
 
 ### Useful Links
 - [Navigine Official Website](https://navigine.com/) – Learn more about our technology, products, and services.

@@ -1,5 +1,6 @@
 package com.navigine.mockgps;
 
+import android.app.Activity;
 import android.webkit.JavascriptInterface;
 
 import java.util.Objects;
@@ -13,41 +14,25 @@ public class WebMap {
 
     @JavascriptInterface
     public void setPosition(final String str) {
+        Activity activity = mFragment.getActivity();
+        if (activity == null) return;
 
-        Objects.requireNonNull(mFragment.getActivity()).runOnUiThread(new Runnable() {
-
-            @Override
-            public void run() {
-                String lat = str.substring(str.indexOf('(') + 1, str.indexOf(','));
-                String lng = str.substring(str.indexOf(',') + 2, str.indexOf(')'));
-
-                CustomLocationFragment.setLatLng(lat, lng);
-            }
+        activity.runOnUiThread(() -> {
+            String lat = str.substring(str.indexOf('(') + 1, str.indexOf(','));
+            String lng = str.substring(str.indexOf(',') + 1, str.indexOf(')'));
+            CustomLocationFragment.setLatLng(lat, lng);
         });
     }
 
     @JavascriptInterface
     public double getLat() {
-
-        String lat = CustomLocationFragment.getLat();
-
-        if (lat.isEmpty()) {
-            return (0);
-        } else {
-            return (Double.parseDouble(lat));
-        }
+        Double lat = CustomLocationFragment.parseCoordinate(CustomLocationFragment.getLat());
+        return lat != null ? lat : 0;
     }
 
     @JavascriptInterface
     public double getLng() {
-
-        String lng = CustomLocationFragment.getLng();
-
-        if (lng.isEmpty()) {
-            return (0);
-        } else {
-            return (Double.parseDouble(lng));
-        }
-
+        Double lng = CustomLocationFragment.parseCoordinate(CustomLocationFragment.getLng());
+        return lng != null ? lng : 0;
     }
 }
