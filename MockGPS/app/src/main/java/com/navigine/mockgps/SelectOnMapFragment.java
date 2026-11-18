@@ -18,6 +18,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebChromeClient;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.Toast;
@@ -25,14 +26,27 @@ import android.widget.Toast;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Objects;
+import java.util.Scanner;
 
 import static com.navigine.mockgps.CustomLocationFragment.latitude;
 import static com.navigine.mockgps.CustomLocationFragment.latitudeText;
 import static com.navigine.mockgps.CustomLocationFragment.longitude;
 import static com.navigine.mockgps.CustomLocationFragment.longitudeText;
 
+
 public class SelectOnMapFragment extends Fragment {
+
+    private static final String MAP_ASSET = "map.html";
+    private static final String MAP_BASE_URL = "https://navigine.com/";
+    private static final String MAP_USER_AGENT_SUFFIX =
+            " NavigineMockGPS/" + BuildConfig.VERSION_NAME
+                    + " (+https://github.com/Navigine/Android-Fake-Mock-Location-Tricks)";
+
+    private static final double MAX_LATITUDE = 90.0;
+    private static final double MAX_LONGITUDE = 180.0;
 
     private static final Intent[] POWERMANAGER_INTENTS = {
             new Intent().setComponent(new ComponentName("com.miui.securitycenter", "com.miui.permcenter.autostart.AutoStartManagementActivity")),
@@ -65,7 +79,8 @@ public class SelectOnMapFragment extends Fragment {
 
     private static boolean isRunning = false;
 
-    public SelectOnMapFragment() { }
+    public SelectOnMapFragment() {
+    }
 
     @SuppressLint({"SetJavaScriptEnabled", "CommitPrefEdits"})
     @Override
@@ -86,17 +101,24 @@ public class SelectOnMapFragment extends Fragment {
                 break;
             }
 
-        mockLocation = new MockLocationImpl(view.getContext());
+        mockLocation = new MockLocationImpl(view.getContext(), this::onMockLocationError);
         mNotificationIntent = new Intent(view.getContext().getApplicationContext(), NotificationService.class);
 
         mapView = view.findViewById(R.id.web_map);
 
         WebMap webMap = new WebMap(this);
-        mapView.getSettings().setJavaScriptEnabled(true);
+        WebSettings settings = mapView.getSettings();
+        settings.setJavaScriptEnabled(true);
+        settings.setJavaScriptCanOpenWindowsAutomatically(true);
+        settings.setUserAgentString(settings.getUserAgentString() + MAP_USER_AGENT_SUFFIX);
+
+        if (BuildConfig.DEBUG) {
+            WebView.setWebContentsDebuggingEnabled(true);
+        }
+
         mapView.setWebChromeClient(new WebChromeClient());
-        mapView.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);
         mapView.addJavascriptInterface(webMap, "Android");
-        mapView.loadUrl("file:///android_asset/map.html");
+        mapView.loadDataWithBaseURL(MAP_BASE_URL, readAsset(MAP_ASSET), "text/html", "UTF-8", null);
 
         startButton = view.findViewById(R.id.start_button);
 
@@ -108,7 +130,7 @@ public class SelectOnMapFragment extends Fragment {
     private void init() {
         LocationManager locationManager = (LocationManager) mContext.getSystemService(Context.LOCATION_SERVICE);
         if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-            ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 
             return;
         }
@@ -128,48 +150,49 @@ public class SelectOnMapFragment extends Fragment {
 
         longitude.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.length() != 0) {
-                    longitudeText = Double.parseDouble(s.toString());
-                    if (longitudeText <= 180.0 && longitudeText >= -180.0) {
-                        mapView.loadUrl("javascript:setOnMap(" + latitudeText + "," + longitudeText + ");");
-
-                        mEditor.putFloat("LONGITUDE", (float) longitudeText);
-                        mEditor.apply();
-                        mContext.stopService(mNotificationIntent);
-                        tryToStop();
-                    }
-                }
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
             }
 
             @Override
-            public void afterTextChanged(Editable s) { }
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                Double value = CustomLocationFragment.parseCoordinate(s);
+                if (value == null || Math.abs(value) > MAX_LONGITUDE) return;
+
+                longitudeText = value;
+                mapView.loadUrl("javascript:setOnMap(" + latitudeText + "," + longitudeText + ");");
+                mEditor.putFloat("LONGITUDE", (float) longitudeText);
+                mEditor.apply();
+                mContext.stopService(mNotificationIntent);
+                tryToStop();
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
         });
 
         latitude.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.length() != 0) {
-                    latitudeText = Double.parseDouble(s.toString());
-                    if (latitudeText <= 90.0 && latitudeText >= -90.0) {
-                        mapView.loadUrl("javascript:setOnMap(" + latitudeText + "," + longitudeText + ");");
-
-                        mEditor.putFloat("LATITUDE", (float) latitudeText);
-                        mEditor.apply();
-                        mContext.stopService(mNotificationIntent);
-                        tryToStop();
-                    }
-                }
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
             }
 
             @Override
-            public void afterTextChanged(Editable s) { }
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                Double value = CustomLocationFragment.parseCoordinate(s);
+                if (value == null || Math.abs(value) > MAX_LATITUDE) return;
+
+                latitudeText = value;
+                mapView.loadUrl("javascript:setOnMap(" + latitudeText + "," + longitudeText + ");");
+                mEditor.putFloat("LATITUDE", (float) latitudeText);
+                mEditor.apply();
+                mContext.stopService(mNotificationIntent);
+                tryToStop();
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
         });
 
         startButton.setText(isRunning ? "Stop" : "Start");
@@ -205,9 +228,9 @@ public class SelectOnMapFragment extends Fragment {
     private boolean isMockLocationEnabled() {
         boolean isMockLocation;
         try {
-            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 AppOpsManager opsManager = (AppOpsManager) mContext.getSystemService(Context.APP_OPS_SERVICE);
-                isMockLocation = (Objects.requireNonNull(opsManager).checkOp(AppOpsManager.OPSTR_MOCK_LOCATION, android.os.Process.myUid(), BuildConfig.APPLICATION_ID)== AppOpsManager.MODE_ALLOWED);
+                isMockLocation = (Objects.requireNonNull(opsManager).checkOp(AppOpsManager.OPSTR_MOCK_LOCATION, android.os.Process.myUid(), BuildConfig.APPLICATION_ID) == AppOpsManager.MODE_ALLOWED);
             } else {
                 isMockLocation = !android.provider.Settings.Secure.getString(mContext.getContentResolver(), "mock_location").equals("0");
             }
@@ -224,5 +247,21 @@ public class SelectOnMapFragment extends Fragment {
             startButton.setText("Start");
             isRunning = false;
         }
+    }
+
+    private String readAsset(String name) {
+        try (InputStream input = mContext.getAssets().open(name);
+             Scanner scanner = new Scanner(input, "UTF-8").useDelimiter("\\A")) {
+            return scanner.hasNext() ? scanner.next() : "";
+        } catch (IOException e) {
+            throw new IllegalStateException("Bundled asset is missing: " + name, e);
+        }
+    }
+
+    private void onMockLocationError() {
+        mContext.stopService(mNotificationIntent);
+        isRunning = false;
+        startButton.setText("Start");
+        Toast.makeText(mContext,getString(R.string.mock_permission_revoked), Toast.LENGTH_LONG).show();
     }
 }

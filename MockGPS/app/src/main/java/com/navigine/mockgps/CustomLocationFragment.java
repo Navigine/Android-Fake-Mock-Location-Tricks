@@ -7,7 +7,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+
 
 public class CustomLocationFragment extends Fragment {
 
@@ -31,12 +33,26 @@ public class CustomLocationFragment extends Fragment {
         return view;
     }
 
-    static void setLatLng(String mLat, String mLng) {
-        latitudeText = Double.parseDouble(mLat);
-        longitudeText = Double.parseDouble(mLng);
+    @Nullable
+    static Double parseCoordinate(@Nullable CharSequence text) {
+        if (text == null) return null;
+        try {
+            return Double.parseDouble(text.toString().trim().replace(',', '.'));
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
 
-        latitude.setText(mLat);
-        longitude.setText(mLng);
+    static void setLatLng(String lat, String lng) {
+        Double parsedLat = parseCoordinate(lat);
+        Double parsedLng = parseCoordinate(lng);
+        if (parsedLat == null || parsedLng == null) return;
+
+        latitudeText = parsedLat;
+        longitudeText = parsedLng;
+
+        latitude.setText(lat);
+        longitude.setText(lng);
     }
 
     static String getLat() {
